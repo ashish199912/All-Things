@@ -1,0 +1,11 @@
+💡 Just add the following patterns in Burp Suite under Proxy > Options > TLS Pass Through:
+
+.*\.google\.com
+
+.*\.gstatic\.com
+
+.*\.googleapis\.com
+
+.*\.pki\.goog
+
+.*\.mozilla\..*
